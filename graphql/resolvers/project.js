@@ -12,6 +12,9 @@ module.exports = {
       else if(args.projectFilter.tag[0] !== null && args.projectFilter.tag[0] !== undefined) {
         projects = await Project.find( { tag: { $in: args.projectFilter.tag} });
       }
+      else if(args.projectFilter.userId !== null && args.projectFilter.userId !== undefined) {
+        projects = await Project.find( { admin: args.projectFilter.userId} );
+      }
       else {
         projects = await Project.find();
       }

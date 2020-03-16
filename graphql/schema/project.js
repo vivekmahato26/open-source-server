@@ -73,6 +73,7 @@ module.exports =  {
                 tag: [String!]
             }
             input ProjectFilter{
+                userId: String
                 tag: [String]
                 category: String
             }
