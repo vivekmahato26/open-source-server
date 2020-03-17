@@ -6,16 +6,24 @@ module.exports = {
   projects: async args => {
     try {
       let projects;
-      if (args.projectFilter.category !== null &&  args.projectFilter.category !== undefined) {
-        projects = await Project.find({ category: args.projectFilter.category });
-      }
-      else if(args.projectFilter.tag[0] !== null && args.projectFilter.tag[0] !== undefined) {
-        projects = await Project.find( { tag: { $in: args.projectFilter.tag} });
-      }
-      else if(args.projectFilter.userId !== null && args.projectFilter.userId !== undefined) {
-        projects = await Project.find( { admin: args.projectFilter.userId} );
-      }
-      else {
+      if (
+        args.projectFilter.category !== null &&
+        args.projectFilter.category !== undefined
+      ) {
+        projects = await Project.find({
+          category: args.projectFilter.category
+        });
+      } else if (
+        args.projectFilter.tag[0] !== null &&
+        args.projectFilter.tag[0] !== undefined
+      ) {
+        projects = await Project.find({ tag: { $in: args.projectFilter.tag } });
+      } else if (
+        args.projectFilter.userId !== null &&
+        args.projectFilter.userId !== undefined
+      ) {
+        projects = await Project.find({ admin: args.projectFilter.userId });
+      } else {
         projects = await Project.find();
       }
       let fetchedProjects = projects.map(async project => {
@@ -39,6 +47,8 @@ module.exports = {
       admin: req.userId,
       tag: tags,
       category: args.projectInput.category,
+      git: args.projectInput.git,
+      website: args.projectInput.website,
       slug: args.projectInput.slug,
       createdAt: new Date(args.projectInput.createdAt)
     });
@@ -55,6 +65,44 @@ module.exports = {
       await admin.save();
 
       return createdProject;
+    } catch (err) {
+      throw err;
+    }
+  },
+  addLikes: async (args,req) => {
+    if (!req.isAuth) {
+      throw new Error("User is not authenticated");
+    }
+    const project = await Project.findByIdAndUpdate(
+      { _id: args.projectId },
+      {
+        $push: {likes: req.userId}
+      }
+    );
+    let updatedProject;
+    try {
+      const resDetails = await project.save();
+      updatedProject = resDetails;
+      return updatedProject;
+    } catch (err) {
+      throw err;
+    }
+  },
+  dislike: async (args,req) => {
+    if (!req.isAuth) {
+      throw new Error("User is not authenticated");
+    }
+    const project = await Project.findByIdAndUpdate(
+      { _id: args.projectId },
+      {
+        $pull: {likes: req.userId}
+      }
+    );
+    let updatedProject;
+    try {
+      const resDetails = await project.save();
+      updatedProject = resDetails;
+      return updatedProject;
     } catch (err) {
       throw err;
     }

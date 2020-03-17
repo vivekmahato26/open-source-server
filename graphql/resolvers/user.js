@@ -33,7 +33,7 @@ module.exports = {
             {
                 name: args.userInput.name,
                 bio: args.userInput.bio,
-                social
+                $push:{social}
             });
         let updatedUser;
         try {

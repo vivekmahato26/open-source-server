@@ -8,6 +8,9 @@ module.exports =  {
                 admin: User
                 tag: [String]
                 category: String!
+                git: String
+                website: String
+                likes: [User]
                 slug: String!
                 createdAt: String!
                 commits: [Commit]
@@ -41,7 +44,9 @@ module.exports =  {
                 name: String!
                 desc: String!
                 slug: String!
-                tag: [String!]                     
+                tag: [String!]
+                git: String
+                website: String                     
                 orgination: String
                 createdAt: String!
                 category: String!
@@ -81,7 +86,9 @@ module.exports =  {
     ProjectMutation: `addProject(projectInput: ProjectInput): Project
                         addCommit(commitInput: CommitInput): Commit
                         raiseIssue(issueInput: IssueInput): Issue
-                        updateIssue(updateIssueInput: UpdateIssueInput): Issue`,
+                        updateIssue(updateIssueInput: UpdateIssueInput): Issue
+                        addLikes(projectId: String): Project
+                        dislike(projectId: String): Project`,
     ProjectQuery : `projects(projectFilter: ProjectFilter): [Project!]!
                     commits: [Commit!]!
                     issue(tag:[String]): [Issue!]!`

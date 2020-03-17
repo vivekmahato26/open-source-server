@@ -19,6 +19,14 @@ const projectSchema = new Schema({
         type: String,
         required: false
     },
+    git: {
+        type: String,
+        required: false
+    },
+    website: {
+        type: String,
+        required: false
+    },
     category: {
         type: String,
         required: true
@@ -32,7 +40,11 @@ const projectSchema = new Schema({
     slug: {
         type: String,
         required: true
-    },  
+    },
+    likes: [{
+        type: Schema.Types.ObjectId,
+        ref:'User'
+    }],  
     commits: [{
         type: Schema.Types.ObjectId,
         ref:'Commit'
