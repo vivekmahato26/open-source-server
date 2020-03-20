@@ -14,7 +14,8 @@ module.exports = {
             const userLogin = new User({
                 sname: args.userLoginInput.sname,
                 email: args.userLoginInput.email,
-                password: hashedPass
+                password: hashedPass,
+                createdAt: new Date(args.projectInput.createdAt)
             });
             const res = await userLogin.save();
             return { ...res._doc, _id: res.id };

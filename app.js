@@ -30,6 +30,7 @@ app.use(
         rootValue: graphQlResolvers,
         graphiql: true
 }));
+mongoose.set('useFindAndModify', false);
 mongoose.set('useUnifiedTopology', true);
 mongoose
   .connect(

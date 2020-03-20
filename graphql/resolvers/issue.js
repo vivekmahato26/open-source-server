@@ -1,14 +1,14 @@
 const Project = require("../../models/project");
 const User = require("../../models/user");
 const Issue = require("../../models/issue");
-const {transformIssue} = require('./populate');
+const { transformIssue } = require("./populate");
 
 module.exports = {
   raiseIssue: async (args, req) => {
     if (!req.isAuth) {
       throw new Error("User is not authenticated");
     }
-    let tags = args.issueInput.tag[0].split(',');
+    let tags = args.issueInput.tag[0].split(",");
 
     const issue = new Issue({
       name: args.issueInput.name,
@@ -36,14 +36,30 @@ module.exports = {
       throw err;
     }
   },
-  issue: async (args) => {
+  issue: async (args, req) => {
     try {
-      let issues;
-      if(args.tag[0] !== null && args.tag[0] !== undefined) {
-        issues = await Project.find( { tag: { $in: args.tag} });
+      let page = 0;
+      let records = 4;
+      if (Object.keys(req.query).length !== 0) {
+        page = req.query.page;
+        records = req.query.records;
       }
-      else {
-        issues = await Project.find();
+      let pagination = {
+        page: parseInt(page),
+        limit: parseInt(records),
+        skip: parseInt(page * records)
+      };
+      let issues;
+      if (args.tag[0] !== null && args.tag[0] !== undefined) {
+        issues = await Issue.find({ tag: { $in: args.tag } })
+          .skip(pagination.skip)
+          .limit(pagination.limit)
+          .sort({ createdAt: -1 });
+      } else {
+        issues = await Issue.find()
+          .skip(pagination.skip)
+          .limit(pagination.limit)
+          .sort({ createdAt: -1 });
       }
       let fetchedIssues = issues.map(async issue => {
         let temp = await transformIssue(issue);
@@ -59,13 +75,16 @@ module.exports = {
       throw new Error("User is not authenticated");
     }
     issueId = "5e6bd62c4d8e213b10c6758a";
-    const issue = await Issue.findByIdAndUpdate({_id:issueId}, {
-      status: args.updateIssueInput.status,
-      tag: args.updateIssueInput.tag.map(t => {
-        return t;
-      }),
-      type: args.updateIssueInput.type
-    });
+    const issue = await Issue.findByIdAndUpdate(
+      { _id: issueId },
+      {
+        status: args.updateIssueInput.status,
+        tag: args.updateIssueInput.tag.map(t => {
+          return t;
+        }),
+        type: args.updateIssueInput.type
+      }
+    );
     let updatedIssue;
     try {
       const resDetails = await issue.save();

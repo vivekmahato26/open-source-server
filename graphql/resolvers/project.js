@@ -3,28 +3,50 @@ const User = require("../../models/user");
 const { transformProject } = require("./populate");
 
 module.exports = {
-  projects: async args => {
+  projects: async (args, req) => {
     try {
+      let page = 0;
+      let records = 4;
+      if(Object.keys(req.query).length !== 0) {
+        page = req.query.page;
+        records = req.query.records;
+      }
+      let pagination = {
+        page: parseInt(page),
+        limit: parseInt(records),
+        skip: parseInt(page * records)
+      };
       let projects;
       if (
         args.projectFilter.category !== null &&
         args.projectFilter.category !== undefined
       ) {
         projects = await Project.find({
-          category: args.projectFilter.category
-        });
+          category: args.projectFilter.category})
+          .skip(pagination.skip)
+          .limit(pagination.limit)
+          .sort({ createdAt: -1 });
       } else if (
         args.projectFilter.tag[0] !== null &&
         args.projectFilter.tag[0] !== undefined
       ) {
-        projects = await Project.find({ tag: { $in: args.projectFilter.tag } });
+        projects = await Project.find({ tag: { $in: args.projectFilter.tag } })
+          .skip(pagination.skip)
+          .limit(pagination.limit)
+          .sort({ createdAt: -1 });
       } else if (
         args.projectFilter.userId !== null &&
         args.projectFilter.userId !== undefined
       ) {
-        projects = await Project.find({ admin: args.projectFilter.userId });
+        projects = await Project.find({ admin: args.projectFilter.userId })
+          .skip(pagination.skip)
+          .limit(pagination.limit)
+          .sort({ createdAt: -1 });
       } else {
-        projects = await Project.find();
+        projects = await Project.find()
+          .skip(pagination.skip)
+          .limit(pagination.limit)
+          .sort({ createdAt: -1 });
       }
       let fetchedProjects = projects.map(async project => {
         let temp = await transformProject(project);
@@ -69,15 +91,16 @@ module.exports = {
       throw err;
     }
   },
-  addLikes: async (args,req) => {
+  addLikes: async (args, req) => {
     if (!req.isAuth) {
       throw new Error("User is not authenticated");
     }
     const project = await Project.findByIdAndUpdate(
       { _id: args.projectId },
       {
-        $push: {likes: req.userId}
-      }
+        $push: { likes: req.userId }
+      },
+      { new: true }
     );
     let updatedProject;
     try {
@@ -88,15 +111,16 @@ module.exports = {
       throw err;
     }
   },
-  dislike: async (args,req) => {
+  dislike: async (args, req) => {
     if (!req.isAuth) {
       throw new Error("User is not authenticated");
     }
     const project = await Project.findByIdAndUpdate(
       { _id: args.projectId },
       {
-        $pull: {likes: req.userId}
-      }
+        $pull: { likes: req.userId }
+      },
+      { new: true }
     );
     let updatedProject;
     try {

@@ -10,12 +10,20 @@ module.exports = { UserTypes: `
         social: [String]
         owned: [Project]
         contributions: [Project]
+        createdAt: String
         
+    }
+    type Search {
+        users: [User]
+        projects: [Project]
+        commits: [Commit]
+        issues: [Issue]
     }
     input UserLoginInput {
         sname: String!
         email: String!
         password: String!
+        createdAt: String!
     }
 
     input UserInput {
@@ -34,7 +42,8 @@ module.exports = { UserTypes: `
     }
     `,
     UserQuery: `login(loginInput:LoginInput!): AuthData!
-                user(userId: ID!): User!`,
+                user(userId: ID!): User!
+                search(filter: String):Search`,
     UserMutation: `createUser(userLoginInput:UserLoginInput):User
                     updateUser(userInput:UserInput):User`
 };

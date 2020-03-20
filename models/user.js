@@ -44,7 +44,11 @@ const userSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Project'
       }
-    ]
+    ],
+    createdAt: {
+      type: Date,
+      required: true
+  }
    
 });
 
