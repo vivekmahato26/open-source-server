@@ -2,6 +2,7 @@ const User = require('../../models/user');
 const Project = require('../../models/project');
 const Commit = require('../../models/commit');
 const Issue = require('../../models/issue');
+const Comment = require('../../models/comment');
 const DataLoader = require('dataloader');
 
 const projectLoader = new DataLoader(projectIds => {
@@ -18,6 +19,10 @@ const issueLoader = new DataLoader(issueIds => {
 
 const userLoader = new DataLoader(userIds => {
   return User.find({ _id: { $in: userIds } });
+})
+
+const commentLoader = new DataLoader(commentIds => {
+  return comments(commentIds);
 })
 
 const projects = async projectIds =>  {
@@ -110,4 +115,32 @@ const issues = async issueIds => {
     }
   }
 
-module.exports = {transformProject,users,transformCommit,transformIssue};
+
+  const transformComment = async comment => {
+    let tempProject = await projects(comment.projectId);
+    let tempUser = await user(comment.userId);
+    return {
+      ...comment.doc,
+      _id: comment.id,
+      createdAt: new Date(comment._doc.createdAt),
+      projectId: tempProject,
+      userId: tempUser
+    }
+
+  }
+
+  const transformMessage = async message => {
+    let sender = await user(message.sender);
+    let receiver = message.receiver.map( async uid => {
+      return await user(uid);
+    })
+    return {
+      ...comment.doc,
+      _id: comment.id,
+      createdAt: new Date(comment._doc.createdAt),
+      sender: sender,
+      receiver: receiver
+    }
+
+  }
+module.exports = {transformProject,users,transformCommit,transformIssue,transformComment,transformMessage};
