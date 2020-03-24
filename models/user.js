@@ -44,7 +44,31 @@ const userSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Project'
       }
+<<<<<<< Updated upstream
     ]
+=======
+    ],
+    comments: [{
+      type: Schema.Types.ObjectId,
+      ref: 'Comment'
+    }],
+    follower: [{
+      type: Schema.Types.ObjectId,
+      ref: 'User'
+    }],
+    following: [{
+      type: Schema.Types.ObjectId,
+      ref: 'User'
+    }],
+    messages: [{
+      type: Schema.Types.ObjectId,
+      ref: 'Message'
+    }],
+    createdAt: {
+      type: Date,
+      required: true
+  }
+>>>>>>> Stashed changes
    
 });
 

@@ -1,5 +1,4 @@
 module.exports = { UserTypes: `
-    
     type User {
         _id: ID!
         sname: String!
@@ -10,8 +9,19 @@ module.exports = { UserTypes: `
         social: [String]
         owned: [Project]
         contributions: [Project]
+<<<<<<< Updated upstream
         
     }
+=======
+        comments: [Comment]
+        messages: [Message]
+        followers: [User]
+        following: [User]
+        createdAt: String!
+        
+    }
+    
+>>>>>>> Stashed changes
     input UserLoginInput {
         sname: String!
         email: String!

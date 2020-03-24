@@ -16,9 +16,25 @@ const projectSchema = new Schema({
         ref: 'User'
     },
     orgination: {
+<<<<<<< Updated upstream
         type: String,
         required: false
     },
+=======
+        type: Schema.Types.ObjectId,
+        ref: 'Orgination'
+    },
+    community: {
+        type: Schema.Types.ObjectId,
+        ref: 'Community'
+    },
+        
+    adopter: [{
+           type: Schema.Types.ObjectId,
+           ref: 'Orgination'
+    }],
+    
+>>>>>>> Stashed changes
     category: {
         type: String,
         required: true
@@ -40,6 +56,10 @@ const projectSchema = new Schema({
     issues: [{
         type: Schema.Types.ObjectId,
         ref:'Issue'
+    }],
+    comments: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Comment'
     }],
     createdAt: {
         type: Date,

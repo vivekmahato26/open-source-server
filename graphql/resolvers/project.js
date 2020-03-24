@@ -58,5 +58,66 @@ module.exports = {
     } catch (err) {
       throw err;
     }
+<<<<<<< Updated upstream
+=======
+  },
+  updateProject: async (args, req) => {
+    if(!req.isAuth) {
+      throw new Error("User is not authenticated");
+    }
+    let community = args.updateInput.community[0].split(',');
+    const project = await Project.findByIdAndUpdate({_id:args.updateInput.projectId},{
+       community,
+    });
+    let updatedProject;
+    try {
+        const resDetails = await project.save();
+        updatedProject = resDetails;
+        return updatedProject;
+    }
+    catch (err) {
+        throw err;
+    }
+  },
+  addLikes: async (args, req) => {
+    if (!req.isAuth) {
+      throw new Error("User is not authenticated");
+    }
+    const project = await Project.findByIdAndUpdate(
+      { _id: args.projectId },
+      {
+        $push: { likes: req.userId }
+      },
+      { new: true }
+    );
+    let updatedProject;
+    try {
+      const resDetails = await project.save();
+      updatedProject = resDetails;
+      return updatedProject;
+    } catch (err) {
+      throw err;
+    }
+  },
+  dislike: async (args, req) => {
+    if (!req.isAuth) {
+      throw new Error("User is not authenticated");
+    }
+    const project = await Project.findByIdAndUpdate(
+      { _id: args.projectId },
+      {
+        $pull: { likes: req.userId }
+      },
+      { new: true }
+    );
+    let updatedProject;
+    try {
+      const resDetails = await project.save();
+      updatedProject = resDetails;
+      return updatedProject;
+    } catch (err) {
+      throw err;
+    }
+>>>>>>> Stashed changes
   }
 };
