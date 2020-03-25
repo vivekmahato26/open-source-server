@@ -3,6 +3,7 @@ const Project = require('../../models/project');
 const Commit = require('../../models/commit');
 const Issue = require('../../models/issue');
 const Comment = require('../../models/comment');
+const Organization = require("../../models/organization");
 const DataLoader = require('dataloader');
 
 const projectLoader = new DataLoader(projectIds => {
@@ -24,6 +25,25 @@ const userLoader = new DataLoader(userIds => {
 const commentLoader = new DataLoader(commentIds => {
   return comments(commentIds);
 })
+
+const orgLoader = new DataLoader(orgIds => {
+  return Organization.find({ _id: { $in: orgIds } });
+})
+
+const orgs = async orgId => {
+  try {
+    const organizations = await orgLoader.load(orgId.toString());
+      return {
+        ...organizations._doc,
+        _id:organizations.id,
+        projects: () => projectLoader.loadMany(organizations._doc.projects),
+        adopted: () => projectLoader.loadMany(organizations._doc.adopted)
+    }
+  }
+  catch(err) {
+    throw(err);
+  }
+}
 
 const projects = async projectIds =>  {
     try {
@@ -85,11 +105,13 @@ const issues = async issueIds => {
 
   const transformProject = async project => {
     let temp = await users(project.admin);
+    let org = await orgs(project.organization);
     return {
       ...project._doc,
       _id: project.id,
       createdAt: new Date(project._doc.createdAt),
       admin: temp,
+      organization: org,
       commits: () => commitLoader.loadMany(project._doc.commits),
       issues: () => issueLoader.loadMany(project._doc.issues)
     };
@@ -120,7 +142,7 @@ const issues = async issueIds => {
     let tempProject = await projects(comment.projectId);
     let tempUser = await user(comment.userId);
     return {
-      ...comment.doc,
+      ...comment._doc,
       _id: comment.id,
       createdAt: new Date(comment._doc.createdAt),
       projectId: tempProject,
@@ -130,14 +152,14 @@ const issues = async issueIds => {
   }
 
   const transformMessage = async message => {
-    let sender = await user(message.sender);
+    let sender = await users(message.sender);
     let receiver = message.receiver.map( async uid => {
-      return await user(uid);
+      return await users(uid);
     })
     return {
-      ...comment.doc,
-      _id: comment.id,
-      createdAt: new Date(comment._doc.createdAt),
+      ...message._doc,
+      _id: message.id,
+      createdAt: new Date(message._doc.createdAt),
       sender: sender,
       receiver: receiver
     }

@@ -44,9 +44,6 @@ const userSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Project'
       }
-<<<<<<< Updated upstream
-    ]
-=======
     ],
     comments: [{
       type: Schema.Types.ObjectId,
@@ -68,7 +65,6 @@ const userSchema = new Schema({
       type: Date,
       required: true
   }
->>>>>>> Stashed changes
    
 });
 

@@ -19,10 +19,10 @@ const orgSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Project'
     }],
-    logo: [{
+    icon: [{
         type: String,
         require: false
     }]
 });
 
-module.exports = mongoose.model('Orgination',orgSchema);
+module.exports = mongoose.model('Organization',orgSchema);

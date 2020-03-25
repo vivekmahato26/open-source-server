@@ -8,12 +8,9 @@ module.exports =  {
                 admin: User
                 tag: [String]
                 category: String!
-<<<<<<< Updated upstream
-=======
                 community: [String]
-                adopters: [Organization]
+                adopter: [Organization]
                 likes: [User]
->>>>>>> Stashed changes
                 slug: String!
                 createdAt: String!
                 commits: [Commit]
@@ -33,8 +30,6 @@ module.exports =  {
                 name: String!
                 website: String!
                 icon: [String]
-                projects: [String]
-                adopted: [String]
             }
 
             type Commit {
@@ -64,20 +59,16 @@ module.exports =  {
                 name: String!
                 desc: String!
                 slug: String!
-<<<<<<< Updated upstream
-                tag: [String!]                     
-                orgination: String
-=======
+                organization: String
                 tag: [String!]
->>>>>>> Stashed changes
                 createdAt: String!
                 category: String!
 
             }
             input UpdateProject {
                 projectId: String!
-                community: [String]                    
-                orgination: [String]
+                community: [String]
+                adopter:[String]
             }
 
             input CommitInput {
@@ -115,14 +106,10 @@ module.exports =  {
                         updateProject(updateInput: UpdateProject): Project
                         addCommit(commitInput: CommitInput): Commit
                         raiseIssue(issueInput: IssueInput): Issue
-<<<<<<< Updated upstream
-                        updateIssue(updateIssueInput: UpdateIssueInput): Issue`,
-=======
                         updateIssue(updateIssueInput: UpdateIssueInput): Issue
                         addLikes(projectId: String): Project
                         dislike(projectId: String): Project
-                         `,
->>>>>>> Stashed changes
+                        addOrganization(orgInput: OrgInput): Organization `,
     ProjectQuery : `projects(projectFilter: ProjectFilter): [Project!]!
                     commits: [Commit!]!
                     issue(tag:[String]): [Issue!]!`

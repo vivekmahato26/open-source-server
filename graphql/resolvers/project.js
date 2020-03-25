@@ -1,22 +1,53 @@
 const Project = require("../../models/project");
 const User = require("../../models/user");
+const Organization = require("../../models/organization");
 const { transformProject } = require("./populate");
 
 module.exports = {
-  projects: async args => {
+  projects: async (args, req) => {
     try {
+      let page = 0;
+      let records = 4;
+      if(Object.keys(req.query).length !== 0) {
+        page = req.query.page;
+        records = req.query.records;
+      }
+      let pagination = {
+        page: parseInt(page),
+        limit: parseInt(records),
+        skip: parseInt(page * records)
+      };
       let projects;
-      if (args.projectFilter.category !== null &&  args.projectFilter.category !== undefined) {
-        projects = await Project.find({ category: args.projectFilter.category });
-      }
-      else if(args.projectFilter.tag[0] !== null && args.projectFilter.tag[0] !== undefined) {
-        projects = await Project.find( { tag: { $in: args.projectFilter.tag} });
-      }
-      else if(args.projectFilter.userId !== null && args.projectFilter.userId !== undefined) {
-        projects = await Project.find( { admin: args.projectFilter.userId} );
-      }
-      else {
-        projects = await Project.find();
+      if (
+        args.projectFilter.category !== null &&
+        args.projectFilter.category !== undefined
+      ) {
+        projects = await Project.find({
+          category: args.projectFilter.category})
+          .skip(pagination.skip)
+          .limit(pagination.limit)
+          .sort({ createdAt: -1 });
+      } else if (
+        args.projectFilter.tag[0] !== null &&
+        args.projectFilter.tag[0] !== undefined
+      ) {
+        projects = await Project.find({ tag: { $in: args.projectFilter.tag } })
+          .skip(pagination.skip)
+          .limit(pagination.limit)
+          .sort({ createdAt: -1 });
+      } else if (
+        args.projectFilter.userId !== null &&
+        args.projectFilter.userId !== undefined
+      ) {
+        projects = await Project.find({ admin: args.projectFilter.userId })
+          .skip(pagination.skip)
+          .limit(pagination.limit)
+          .sort({ createdAt: -1 });
+      } else {
+        projects = await Project.find()
+          .skip(pagination.skip)
+          .limit(pagination.limit)
+          .sort({ createdAt: -1 });
       }
       let fetchedProjects = projects.map(async project => {
         let temp = await transformProject(project);
@@ -35,7 +66,7 @@ module.exports = {
     const project = new Project({
       name: args.projectInput.name,
       desc: args.projectInput.desc,
-      orgination: args.projectInput.orgination,
+      organization: args.projectInput.organization,
       admin: req.userId,
       tag: tags,
       category: args.projectInput.category,
@@ -54,29 +85,41 @@ module.exports = {
       admin.owned.push(project);
       await admin.save();
 
+      const org = await Organization.findById(args.projectInput.organization);
+
+      if(!org) {
+        throw new Error("Organization not found");
+      }
+
+      org.projects.push(project);
+      await org.save();
+
       return createdProject;
     } catch (err) {
       throw err;
     }
-<<<<<<< Updated upstream
-=======
   },
   updateProject: async (args, req) => {
-    if(!req.isAuth) {
+    if (!req.isAuth) {
       throw new Error("User is not authenticated");
     }
-    let community = args.updateInput.community[0].split(',');
-    const project = await Project.findByIdAndUpdate({_id:args.updateInput.projectId},{
-       community,
-    });
+    let community = args.updateInput.community[0].split(",");
+    let adopter = args.updateInput.adopter[0].split(",");
+    const project = await Project.findByIdAndUpdate(
+      { _id: args.updateInput.projectId },
+      {
+        community,
+        adopter
+      },
+      {new:true}
+    );
     let updatedProject;
     try {
-        const resDetails = await project.save();
-        updatedProject = resDetails;
-        return updatedProject;
-    }
-    catch (err) {
-        throw err;
+      const resDetails = await project.save();
+      updatedProject = resDetails;
+      return updatedProject;
+    } catch (err) {
+      throw err;
     }
   },
   addLikes: async (args, req) => {
@@ -118,6 +161,19 @@ module.exports = {
     } catch (err) {
       throw err;
     }
->>>>>>> Stashed changes
+  },
+  addOrganization: async args => {
+    try {
+      const organization = new Organization({
+        name: args.orgInput.name,
+        website: args.orgInput.website,
+        icon: args.orgInput.icon
+      });
+
+      const res = await organization.save();
+      return { ...res._doc, _id: res.id };
+    } catch (err) {
+      throw err;
+    }
   }
 };

@@ -32,17 +32,30 @@ module.exports = {
             throw err;
         }
     },
-    commits: async() => {
-        try{
-            const commits = await Commit.find();
-            let fetchedCommits = commits.map(async commit => {
-                let temp = await transformCommit(commit);
-                return temp;
-            });
-            return fetchedCommits;
+    commits: async (args,req) => {
+        try {
+          let page = 0;
+          let records = 4;
+          if (Object.keys(req.query).length !== 0) {
+            page = req.query.page;
+            records = req.query.records;
+          }
+          let pagination = {
+            page: parseInt(page),
+            limit: parseInt(records),
+            skip: parseInt(page * records)
+          };
+          const commits = await Commit.find()
+            .skip(pagination.skip)
+            .limit(pagination.limit)
+            .sort({ createdAt: -1 });
+          let fetchedCommits = commits.map(async commit => {
+            let temp = await transformCommit(commit);
+            return temp;
+          });
+          return fetchedCommits;
+        } catch (err) {
+          throw err;
         }
-        catch(err) {
-            throw err;
-        }
-    }
+      }
 }

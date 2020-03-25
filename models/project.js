@@ -15,26 +15,24 @@ const projectSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'User'
     },
-    orgination: {
-<<<<<<< Updated upstream
+    organization: {
+        type: Schema.Types.ObjectId,
+        ref: 'Organization'
+    },
+    community: [{
         type: String,
-        required: false
-    },
-=======
+        required: true
+    }],
+    likes: [{
         type: Schema.Types.ObjectId,
-        ref: 'Orgination'
-    },
-    community: {
-        type: Schema.Types.ObjectId,
-        ref: 'Community'
-    },
+        ref: 'User'
+    }],
         
     adopter: [{
            type: Schema.Types.ObjectId,
-           ref: 'Orgination'
+           ref: 'Organization'
     }],
     
->>>>>>> Stashed changes
     category: {
         type: String,
         required: true

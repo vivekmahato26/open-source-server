@@ -14,7 +14,8 @@ module.exports = {
             const userLogin = new User({
                 sname: args.userLoginInput.sname,
                 email: args.userLoginInput.email,
-                password: hashedPass
+                password: hashedPass,
+                createdAt: new Date(args.userLoginInput.createdAt)
             });
             const res = await userLogin.save();
             return { ...res._doc, _id: res.id };
@@ -34,7 +35,8 @@ module.exports = {
                 name: args.userInput.name,
                 bio: args.userInput.bio,
                 social
-            });
+            },
+            {new:true});
         let updatedUser;
         try {
             const resDetails = await user.save();

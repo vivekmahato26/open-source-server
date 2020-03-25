@@ -21,6 +21,7 @@ module.exports = {
             createdAt: String!
             children: [Comment]
         }
+        
         input CommentInput {
             message: String!
             project: String!
@@ -33,13 +34,13 @@ module.exports = {
             issues: [Issue]
         }
 
-
     `,
     UserActionsMutations: `postComment(commentInput: CommentInput): Comment
+                            commentReply(commId: String!,message: String!): Comment
                             followUser(following: String!): User
                             unfollowUser(following: String!): User
                             sendMessage(messageInput: MessageInput): Message`,
     UserActionsQuery: `comment(projectId:String!): Comment
-                        messages(userId: String!): Message
+                        messages: [Message]
                         search(filter: String):Search`
 }

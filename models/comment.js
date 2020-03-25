@@ -17,7 +17,7 @@ const commentSchema = new Schema({
     },
     children: {
         type: [ {
-          type: Schema.ObjectId,
+          type: Schema.Types.ObjectId,
           ref: 'Comment',
         }],
         default: [],

@@ -36,14 +36,30 @@ module.exports = {
       throw err;
     }
   },
-  issue: async (args) => {
+  issue: async (args, req) => {
     try {
-      let issues;
-      if(args.tag[0] !== null && args.tag[0] !== undefined) {
-        issues = await Project.find( { tag: { $in: args.tag} });
+      let page = 0;
+      let records = 4;
+      if (Object.keys(req.query).length !== 0) {
+        page = req.query.page;
+        records = req.query.records;
       }
-      else {
-        issues = await Project.find();
+      let pagination = {
+        page: parseInt(page),
+        limit: parseInt(records),
+        skip: parseInt(page * records)
+      };
+      let issues;
+      if (args.tag[0] !== null && args.tag[0] !== undefined) {
+        issues = await Issue.find({ tag: { $in: args.tag } })
+          .skip(pagination.skip)
+          .limit(pagination.limit)
+          .sort({ createdAt: -1 });
+      } else {
+        issues = await Issue.find()
+          .skip(pagination.skip)
+          .limit(pagination.limit)
+          .sort({ createdAt: -1 });
       }
       let fetchedIssues = issues.map(async issue => {
         let temp = await transformIssue(issue);

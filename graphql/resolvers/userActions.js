@@ -45,6 +45,35 @@ module.exports = {
       throw err;
     }
   },
+  // commentReply: async (args, req) => {
+  //   if (!req.isAuth) {
+  //     throw new Error("User is not authenticated");
+  //   }
+    
+  //   try {
+  //     const comment = await Comment.findByIdAndUpdate({_id:args.commId},{
+        
+  //     })
+  //     let newComment;
+  //     const res = await comment.save();
+  //     newComment = res;
+
+  //     const project = await Project.findById(args.commentInput.project);
+  //     if (!project) {
+  //       throw new Error("Project not found.");
+  //     }
+  //     project.comments.push(comment);
+  //     const user = await User.findById(req.userId);
+  //     if (!user) {
+  //       throw new Error("user not found.");
+  //     }
+  //     user.comments.push(comment);
+  //     await user.save();
+  //     return newComment;
+  //   } catch (err) {
+  //     throw err;
+  //   }
+  // },
   comments: async (args, req) => {
     try {
       let page = 0;
@@ -94,12 +123,18 @@ module.exports = {
       }
       user.messages.push(message);
       await user.save();
+      const receiver = await User.findById(args.messageInput.receiver);
+      if (!receiver) {
+        throw new Error("user not found.");
+      }
+      receiver.messages.push(message);
+      await receiver.save();
       return newMessage;
     } catch (err) {
       throw err;
     }
   },
-  messages: async req => {
+  messages: async (args,req) => {
     try {
       let page = 0;
       let records = 25;
@@ -131,16 +166,14 @@ module.exports = {
     if (!req.isAuth) {
       throw new Error("User is not authenticated");
     }
-    const follow = User.findByIdAndUpdate(
-      { _id: req.userId },
-      {
-        $push: { following: args.following }
-      }
-    );
-    let newFollow;
+    
     try {
-      const res = await follow.save();
-      newFollow = res;
+      const follow = await User.findByIdAndUpdate(
+        { _id: req.userId },
+        {
+          $push: { following: args.following }
+        }
+      );
 
       const user = await User.findById(args.following);
       if (!user) {
@@ -148,7 +181,7 @@ module.exports = {
       }
       user.follower.push(follow);
       await user.save();
-      return newFollow;
+      return follow;
     } catch (err) {
       throw err;
     }
@@ -157,16 +190,13 @@ module.exports = {
     if (!req.isAuth) {
       throw new Error("User is not authenticated");
     }
-    const follow = User.findByIdAndUpdate(
+    try {
+    const follow = await User.findByIdAndUpdate(
       { _id: req.userId },
       {
         $pull: { following: args.following }
       }
     );
-    let newFollow;
-    try {
-      const res = await follow.save();
-      newFollow = res;
 
       const user = await User.findById(args.following);
       if (!user) {
@@ -174,7 +204,7 @@ module.exports = {
       }
       user.follower.pull(follow);
       await user.save();
-      return newFollow;
+      return follow;
     } catch (err) {
       throw err;
     }
