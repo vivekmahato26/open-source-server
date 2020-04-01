@@ -26,6 +26,12 @@ module.exports = {
              }
             project.commits.push(commit);
             await project.save();
+            // const user = await User.findById(req.userId);
+            // if (!user) {
+            //     throw new Error('User not found.');
+            //  }
+            // user.contributions.push(commit);
+            // await user.save();
             return createdCommit;
         }
         catch(err) {

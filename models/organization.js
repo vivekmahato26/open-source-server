@@ -9,7 +9,7 @@ const orgSchema = new Schema({
     },
     website: {
         type: String,
-        required: true,
+        required: false,
     },
     projects: [{
         type: Schema.Types.ObjectId,
@@ -24,5 +24,5 @@ const orgSchema = new Schema({
         require: false
     }]
 });
-
+orgSchema.index({name:'text',website:'text'});
 module.exports = mongoose.model('Organization',orgSchema);

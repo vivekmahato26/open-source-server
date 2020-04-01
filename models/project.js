@@ -19,10 +19,32 @@ const projectSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Organization'
     },
-    community: [{
-        type: String,
-        required: true
-    }],
+    community: {
+        github: {
+            type: String,
+            required: false
+        },
+        website: {
+            type: String,
+            required: false
+        },
+        slack: {
+            type: String,
+            required: false
+        },
+        facebook: {
+            type: String,
+            required: false
+        },
+        discord: {
+            type: String,
+            required: false
+        },
+        twitter: {
+            type: String,
+            required: false
+        }
+    },
     likes: [{
         type: Schema.Types.ObjectId,
         ref: 'User'
@@ -64,5 +86,5 @@ const projectSchema = new Schema({
         required: true
     }
 });
-
+projectSchema.index({name:'text',desc:'text',category:'text',tag:'text'});
 module.exports = mongoose.model('Project', projectSchema);

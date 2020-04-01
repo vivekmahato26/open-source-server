@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const User = require('../../models/user');
+const {users} = require("./populate");
 
 module.exports = {
     createUser: async args => {
@@ -67,7 +68,7 @@ module.exports = {
     },
     user: async(args) => {
         try{
-            const user = await User.findById(args.userId);
+            const user = await users(args.userId);
             return user;
         }
         catch(err) {

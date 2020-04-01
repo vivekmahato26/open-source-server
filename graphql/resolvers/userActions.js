@@ -34,6 +34,7 @@ module.exports = {
         throw new Error("Project not found.");
       }
       project.comments.push(comment);
+      await project.save();
       const user = await User.findById(req.userId);
       if (!user) {
         throw new Error("user not found.");
@@ -93,7 +94,7 @@ module.exports = {
         .skip(pagination.skip)
         .limit(pagination.limit)
         .sort({ createdAt: -1 });
-      let fetchedComments = comments.map(async comment => {
+      let fetchedComments =  comments.map(async comment => {
         let temp = await transformComment(comment);
         return temp;
       });
@@ -218,11 +219,10 @@ module.exports = {
         limit: parseInt(records),
         skip: parseInt(page * records)
       };
-      let projects, user, issues, commits;
+      let projects, user, issues;
+      var re = new RegExp(args.filter,"i")
 
-      projects = await Project.find({
-        name: args.filter
-      })
+      projects = await Project.find({ $text: { $search: args.filter } })
         .skip(pagination.skip)
         .limit(pagination.limit)
         .sort({ createdAt: -1 });
@@ -231,20 +231,16 @@ module.exports = {
         let temp = await transformProject(project);
         return temp;
       });
-      user = await User.find({
-        sname: args.filter
-      })
+      user = await User.find({ $text: { $search: args.filter } })
         .skip(pagination.skip)
         .limit(pagination.limit)
         .sort({ name: -1 });
 
       let fetchedUsers = user.map(async u => {
-        let temp = await users(u);
+        let temp = await users(u._id);
         return temp;
       });
-      issues = await Issue.find({
-        name: args.filter
-      })
+      issues = await Issue.find({ $text: { $search: args.filter } })
         .skip(pagination.skip)
         .limit(pagination.limit)
         .sort({ createdAt: -1 });
@@ -253,16 +249,13 @@ module.exports = {
         let temp = await transformIssue(issue);
         return temp;
       });
-      commits = await Project.find({
-        message: `"${args.filter}"`
-      })
-        .skip(pagination.skip)
-        .limit(pagination.limit)
-        .sort({ createdAt: -1 });
 
-      let searchRes = [...fetchedProjects, ...fetchedUsers, ...fetchedIssues];
-      console.log(searchRes);
-      return fetchedProjects;
+      let searchRes = {
+        users:fetchedUsers,
+        projects:fetchedProjects,
+        issues:fetchedIssues
+      };
+      return searchRes;
     } catch (err) {
       throw err;
     }

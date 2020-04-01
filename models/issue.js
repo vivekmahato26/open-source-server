@@ -42,5 +42,5 @@ const issueSchema = new Schema({
     required: true
   }
 });
-
+issueSchema.index({name:'text',desc:'text',status:'text'});
 module.exports = mongoose.model("Issue", issueSchema);

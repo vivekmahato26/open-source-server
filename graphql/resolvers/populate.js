@@ -1,4 +1,5 @@
 const User = require('../../models/user');
+const Message = require("../../models/message");
 const Project = require('../../models/project');
 const Commit = require('../../models/commit');
 const Issue = require('../../models/issue');
@@ -8,6 +9,14 @@ const DataLoader = require('dataloader');
 
 const projectLoader = new DataLoader(projectIds => {
   return projects(projectIds);
+});
+
+const messageLoader = new DataLoader(messageIds => {
+  return Message.find({_id:{$in:messageIds}});
+});
+
+const projLoader = new DataLoader(projectIds => {
+  return Project.find({_id:{$in:projectIds}});
 });
 
 const commitLoader = new DataLoader(commitIds => {
@@ -21,6 +30,10 @@ const issueLoader = new DataLoader(issueIds => {
 const userLoader = new DataLoader(userIds => {
   return User.find({ _id: { $in: userIds } });
 })
+
+const usersLoader = new DataLoader(userIds => {
+  return users(userIds);
+});
 
 const commentLoader = new DataLoader(commentIds => {
   return comments(commentIds);
@@ -68,7 +81,16 @@ const commits = async commitIds => {
     throw err;
   }
 }
-
+const comments = async commentIds => {
+  try{
+    const comments = await Comment.find({_id:{$in:commentIds}});
+    comments.map(comment => {return transformComment(comment)});
+    return comments;
+  }
+  catch(err){
+    throw err;
+  }
+}
 const issues = async issueIds => {
   try {
     const issues = await Issue.find({_id: {$in: issueIds}});
@@ -81,10 +103,16 @@ const issues = async issueIds => {
   }
 }
 
-  const singleProjet = async projectId => {
+  const singleProject = async projectId => {
     try {
       const project = await projectLoader.load(projectId.toString());
-      return project;
+      return {
+        ...project._doc,
+        _id: project.id,
+        comments: () => commentLoader.loadMany(project._doc.comments),
+        commits: () => commitLoader.loadMany(project._doc.commits),
+        issues: () => issueLoader.loadMany(project._doc.issues),
+      };
     } catch (err) {
       throw err;
     }
@@ -96,7 +124,10 @@ const issues = async issueIds => {
       return {
         ...user._doc,
         _id: user.id,
-        owned: () => projectLoader.loadMany(user._doc.owned)
+        owned: () => projectLoader.loadMany(user._doc.owned),
+        comments: () => commentLoader.loadMany(user._doc.comments),
+        messages: () => messageLoader.loadMany(user._doc.messages),
+        contributed: () => issueLoader.loadMany(user._doc.contributed)
       };
     } catch (err) {
       throw err;
@@ -104,16 +135,17 @@ const issues = async issueIds => {
   };
 
   const transformProject = async project => {
-    let temp = await users(project.admin);
-    let org = await orgs(project.organization);
-    return {
+    let temp =  await users(project.admin);
+    let org =  await orgs(project.organization);
+    return  {
       ...project._doc,
       _id: project.id,
       createdAt: new Date(project._doc.createdAt),
-      admin: temp,
-      organization: org,
+      admin: () => users(project.admin),
+      organization: () => orgs(project.organization),
       commits: () => commitLoader.loadMany(project._doc.commits),
-      issues: () => issueLoader.loadMany(project._doc.issues)
+      issues: () => issueLoader.loadMany(project._doc.issues),
+      comments: () => commentLoader.loadMany(project._doc.comments)
     };
   };
 
@@ -139,30 +171,38 @@ const issues = async issueIds => {
 
 
   const transformComment = async comment => {
-    let tempProject = await projects(comment.projectId);
-    let tempUser = await user(comment.userId);
+    let tempUser = await users(comment.user);
+
+    let tempProject = await singleProject(comment.project);
     return {
       ...comment._doc,
       _id: comment.id,
       createdAt: new Date(comment._doc.createdAt),
-      projectId: tempProject,
-      userId: tempUser
+      project: tempProject,
+      user: tempUser
     }
 
   }
 
+  const transformOrg = async org => {
+    return {
+      ...org._doc,
+      _id: org.id,
+      projects: () => projectLoader.loadMany(org._doc.projects),
+      adopted: () => projectLoader.loadMany(org._doc.adopted)
+    }
+  }
+
   const transformMessage = async message => {
     let sender = await users(message.sender);
-    let receiver = message.receiver.map( async uid => {
-      return await users(uid);
-    })
+    
     return {
       ...message._doc,
       _id: message.id,
       createdAt: new Date(message._doc.createdAt),
       sender: sender,
-      receiver: receiver
+      receiver:() => usersLoader.loadMany(message._doc.receiver)
     }
 
   }
-module.exports = {transformProject,users,transformCommit,transformIssue,transformComment,transformMessage};
+module.exports = {transformProject,transformOrg,users,transformCommit,transformIssue,transformComment,transformMessage};

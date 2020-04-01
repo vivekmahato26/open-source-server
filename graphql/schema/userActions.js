@@ -40,7 +40,7 @@ module.exports = {
                             followUser(following: String!): User
                             unfollowUser(following: String!): User
                             sendMessage(messageInput: MessageInput): Message`,
-    UserActionsQuery: `comment(projectId:String!): Comment
+    UserActionsQuery: `comments(projectId:String!): [Comment]
                         messages: [Message]
                         search(filter: String):Search`
 }

@@ -1,7 +1,7 @@
 const Project = require("../../models/project");
 const User = require("../../models/user");
 const Organization = require("../../models/organization");
-const { transformProject } = require("./populate");
+const { transformProject,transformOrg } = require("./populate");
 
 module.exports = {
   projects: async (args, req) => {
@@ -43,7 +43,20 @@ module.exports = {
           .skip(pagination.skip)
           .limit(pagination.limit)
           .sort({ createdAt: -1 });
-      } else {
+      }
+      // else if (
+      //   args.projectFilter.projectId !== null &&
+      //   args.projectFilter.projectId.length !== 0
+      // ){
+      //   let temp;
+      //   let pid = args.projectFilter.projectId;
+      //   for(i = 0; i < pid.length; i++){
+      //     temp = await Project.findById(pid[i]);
+      //     console.log(temp);
+      //     projects.push(temp);
+      //   }
+      // } 
+      else {
         projects = await Project.find()
           .skip(pagination.skip)
           .limit(pagination.limit)
@@ -62,11 +75,27 @@ module.exports = {
     if (!req.isAuth) {
       throw new Error("User is not authenticated");
     }
+    let orgId;
     let tags = args.projectInput.tag[0].split(",");
+    var re = new RegExp(args.projectInput.organization,"i");
+    const  org = await Organization.find({name:{ $regex:  re }});
+    if(org.length === 0) {
+      const organization = new Organization({
+        name: args.orgInput.name,
+        website: args.orgInput.website,
+        icon: args.orgInput.icon
+      });
+
+      const res = await organization.save();
+      orgId = res._id;
+    }
+    else {
+      orgId = org[0]._id;
+    }
     const project = new Project({
       name: args.projectInput.name,
       desc: args.projectInput.desc,
-      organization: args.projectInput.organization,
+      organization: orgId,
       admin: req.userId,
       tag: tags,
       category: args.projectInput.category,
@@ -85,12 +114,10 @@ module.exports = {
       admin.owned.push(project);
       await admin.save();
 
-      const org = await Organization.findById(args.projectInput.organization);
-
+      const org = await Organization.findById(orgId);
       if(!org) {
         throw new Error("Organization not found");
       }
-
       org.projects.push(project);
       await org.save();
 
@@ -103,8 +130,24 @@ module.exports = {
     if (!req.isAuth) {
       throw new Error("User is not authenticated");
     }
-    let community = args.updateInput.community[0].split(",");
-    let adopter = args.updateInput.adopter[0].split(",");
+    let community = args.updateInput.community;
+    let adopters = args.updateInput.adopter[0].split(",");
+    let adopter = [];
+    for (i = 0; i < adopters.length; i++)  {
+      var re = new RegExp(adopters[i],"i");
+      const  org = await Organization.find({name:{ $regex:  re }});
+      if(org.length === 0) {
+        const organization = new Organization({
+          name: adopters[i],
+        });
+        const res = await organization.save();
+        adopter.push(res._id);
+      }
+      else {
+        adopter.push(org[0]._id);
+      }
+    }
+    
     const project = await Project.findByIdAndUpdate(
       { _id: args.updateInput.projectId },
       {
@@ -117,6 +160,14 @@ module.exports = {
     try {
       const resDetails = await project.save();
       updatedProject = resDetails;
+      adopter.map(async (o) => {
+        const org = await Organization.findById(o);
+        if(!org) {
+          throw new Error("Organization not found");
+        }
+        org.adopted.push(project);
+        await org.save();
+      })
       return updatedProject;
     } catch (err) {
       throw err;
@@ -164,6 +215,9 @@ module.exports = {
   },
   addOrganization: async args => {
     try {
+      if (!req.isAuth) {
+        throw new Error("User is not authenticated");
+      }
       const organization = new Organization({
         name: args.orgInput.name,
         website: args.orgInput.website,
@@ -173,6 +227,23 @@ module.exports = {
       const res = await organization.save();
       return { ...res._doc, _id: res.id };
     } catch (err) {
+      throw err;
+    }
+  },
+  orgSearch: async args => {
+    try {
+      var re = new RegExp(args.filter,"i")
+      const  org = await Organization.find({name:{ $regex:  re }})
+      .limit(4)
+      .sort({ createdAt: -1 });
+      const res = org.map(async o => {
+        let temp = await transformOrg(o);
+        return temp;
+      });
+      console.log(res);
+      return res;
+    }
+    catch(err) {
       throw err;
     }
   }

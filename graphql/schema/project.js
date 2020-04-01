@@ -8,7 +8,7 @@ module.exports =  {
                 admin: User
                 tag: [String]
                 category: String!
-                community: [String]
+                community: Community
                 adopter: [Organization]
                 likes: [User]
                 slug: String!
@@ -17,10 +17,26 @@ module.exports =  {
                 issues: [Issue]
                 comments: [Comment]
             }
+            type Community {
+                github: String
+                website: String
+                slack:String
+                facebook:String
+                discord:String
+                twitter:String
+            }
+            input CommunityInput {
+                github: String
+                website: String
+                slack:String
+                facebook:String
+                discord:String
+                twitter:String
+            }
             type Organization {
                 _id: ID!
                 name: String!
-                website: String!
+                website: String
                 icon: [String]
                 projects: [Project]
                 adopted: [Project]
@@ -33,7 +49,7 @@ module.exports =  {
             }
 
             type Commit {
-                _id: ID
+                _id: ID!
                 commiter: String!
                 message: String!
                 link: String!
@@ -67,7 +83,7 @@ module.exports =  {
             }
             input UpdateProject {
                 projectId: String!
-                community: [String]
+                community: CommunityInput
                 adopter:[String]
             }
 
@@ -112,5 +128,6 @@ module.exports =  {
                         addOrganization(orgInput: OrgInput): Organization `,
     ProjectQuery : `projects(projectFilter: ProjectFilter): [Project!]!
                     commits: [Commit!]!
-                    issue(tag:[String]): [Issue!]!`
+                    issue(tag:[String]): [Issue!]!
+                    orgSearch(filter:String!):[Organization]`
 };
