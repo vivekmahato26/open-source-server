@@ -34,8 +34,9 @@ app.use(
 )
 mongoose.set('useUnifiedTopology', true)
 mongoose.set('debug', true)
-mongoose.connect(
-    `mongodb://127.0.0.1:27017/osc`,
+mongoose
+  .connect(
+    `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0-ogjsn.mongodb.net/${process.env.MONGO_DB}?retryWrites=true&w=majority`,
     {
       useNewUrlParser: true,
       useCreateIndex: true
