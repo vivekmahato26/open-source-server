@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const Schema = mongoose.Schema;
 
@@ -13,12 +13,48 @@ const projectSchema = new Schema({
     },
     admin: {
         type: Schema.Types.ObjectId,
-        ref: 'User'
+        ref: 'UserModel'
     },
-    orgination: {
-        type: String,
-        required: false
+    organization: {
+        type: Schema.Types.ObjectId,
+        ref: 'OrganizationModel'
     },
+    community: {
+        github: {
+            type: String,
+            required: false
+        },
+        website: {
+            type: String,
+            required: false
+        },
+        slack: {
+            type: String,
+            required: false
+        },
+        facebook: {
+            type: String,
+            required: false
+        },
+        discord: {
+            type: String,
+            required: false
+        },
+        twitter: {
+            type: String,
+            required: false
+        }
+    },
+    likes: [{
+        type: Schema.Types.ObjectId,
+        ref: 'UserModel'
+    }],
+        
+    adopter: [{
+           type: Schema.Types.ObjectId,
+           ref: 'OrganizationModel'
+    }],
+    
     category: {
         type: String,
         required: true
@@ -35,16 +71,18 @@ const projectSchema = new Schema({
     },  
     commits: [{
         type: Schema.Types.ObjectId,
-        ref:'Commit'
+        ref:'CommitModel'
     }],
     issues: [{
         type: Schema.Types.ObjectId,
-        ref:'Issue'
+        ref:'IssueModel'
     }],
-    createdAt: {
-        type: Date,
-        required: true
-    }
+    comments: [{
+        type: Schema.Types.ObjectId,
+        ref: 'CommentModel'
+    }]
+},{
+    timestamps: true
 });
-
-module.exports = mongoose.model('Project', projectSchema);
+projectSchema.index({name:'text',desc:'text',category:'text',tag:'text'});
+export default mongoose.model('ProjectModel', projectSchema);

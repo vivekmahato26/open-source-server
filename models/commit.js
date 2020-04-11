@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const Schema = mongoose.Schema;
 
@@ -21,7 +21,7 @@ const commitSchema = new Schema({
     },  
     project: {
         type: Schema.Types.ObjectId,
-        ref:'Project'
+        ref:'ProjectModel'
     },
     createdAt: {
         type: Date,
@@ -29,4 +29,4 @@ const commitSchema = new Schema({
     }
 });
 
-module.exports = mongoose.model('Commit', commitSchema);
+export default mongoose.model('CommitModel', commitSchema);

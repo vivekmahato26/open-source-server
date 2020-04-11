@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from 'mongoose';
 
 const Schema = mongoose.Schema;
 
@@ -35,12 +35,12 @@ const issueSchema = new Schema({
   },
   project: {
     type: Schema.Types.ObjectId,
-    ref: "Project"
+    ref: "ProjectModel"
   },
   createdAt: {
     type: Date,
     required: true
   }
 });
-
-module.exports = mongoose.model("Issue", issueSchema);
+issueSchema.index({name:'text',desc:'text',status:'text'});
+export default mongoose.model("IssueModel", issueSchema);
