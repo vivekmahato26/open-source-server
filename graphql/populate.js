@@ -14,7 +14,7 @@ export const projectLoader = new DataLoader(async projectIds => {
 
 export const messageLoader = new DataLoader(async messageIds => {
   const messages = await MessageModel.find({ _id: { $in: messageIds } }).exec();
-  return messageIds.map( id => messages.find((message) => message._id.toString() === id.toString()) )
+  return mapResult(messageIds,messages)
 });
 
 export const commitLoader = new DataLoader(async commitIds => {

@@ -25,8 +25,9 @@ export const Query = {
       user.password
     )
     if (!isEqual) {
-      throw new Error('INvalid Credentials!')
+      throw new Error('Invalid Credentials!')
     }
+
     const token = jwt.sign(
       { userId: user.id, email: user.email },
       process.env.SECRET_KEY,
@@ -71,19 +72,21 @@ export const Query = {
         .limit(pagination.limit)
         .sort({ createdAt: -1 })
 
-      organizations = await OrganizationModel.find({ $text: { $search: args.filter } })
+      organizations = await OrganizationModel.find({
+        $text: { $search: args.filter }
+      })
         .skip(pagination.skip)
         .limit(pagination.limit)
         .sort({ createdAt: -1 })
 
       let searchRes = {
-        users:users,
-        projects:projects,
-        issues:issues,
-        organizations: organizations
+        ...users,
+        ...projects,
+        ...issues,
+        ...organizations
       }
-      console.log(searchRes);
-      
+      console.log(searchRes)
+
       return searchRes
     } catch (err) {
       throw err
@@ -120,6 +123,7 @@ export const Mutation = {
     const user = await UserModel.findByIdAndUpdate(
       { _id: req.userId },
       {
+        profilePic: args.userInput.profilePic,
         name: args.userInput.name,
         bio: args.userInput.bio,
         social
@@ -141,18 +145,21 @@ export const Mutation = {
     }
 
     try {
-      const follow = await User.findByIdAndUpdate(
+      const follow = await UserModel.findByIdAndUpdate(
         { _id: req.userId },
         {
           $push: { following: args.following }
+        },
+        {
+          new: true
         }
       )
 
-      const user = await User.findById(args.following)
+      const user = await UserModel.findById(args.following)
       if (!user) {
         throw new Error('user not found.')
       }
-      user.follower.push(follow)
+      user.followers.push(follow)
       await user.save()
       return follow
     } catch (err) {
@@ -164,18 +171,21 @@ export const Mutation = {
       throw new Error('User is not authenticated')
     }
     try {
-      const follow = await User.findByIdAndUpdate(
+      const follow = await UserModel.findByIdAndUpdate(
         { _id: req.userId },
         {
           $pull: { following: args.following }
+        },
+        {
+          new: true
         }
       )
 
-      const user = await User.findById(args.following)
+      const user = await UserModel.findById(args.following)
       if (!user) {
         throw new Error('user not found.')
       }
-      user.follower.pull(follow)
+      user.followers.pull(follow)
       await user.save()
       return follow
     } catch (err) {
@@ -185,17 +195,32 @@ export const Mutation = {
 }
 
 export const User = {
-  owned: (user) => projectLoader.loadMany(user.owned),
+  owned: user => projectLoader.loadMany(user.owned),
   // contributions: (user) => projectLoader.loadMany(user.contributions),
-  comments: (user) => commentLoader.loadMany(user.comments),
-  messages: (user) => messageLoader.loadMany(user.messages),
-  followers: (user) => userLoader.loadMany(user.followers),
-  following: (user) => userLoader.loadMany(user.following)
+  comments: user => commentLoader.loadMany(user.comments),
+  messages: user => messageLoader.loadMany(user.messages),
+  followers: user => userLoader.loadMany(user.followers),
+  following: user => userLoader.loadMany(user.following)
 }
 
+// export const Search = {
+//   users: (search) => userLoader.loadMany(search.users),
+//   projects: (search) => projectLoader.loadMany(search.projects),
+//   issues: (search) => issueLoader.loadMany(search.issues),
+//   organizations: (search) => orgLoader.loadMany(search.organizations)
+// }
+
 export const Search = {
-  users: (search) => userLoader.loadMany(search.users),
-  projects: (search) => projectLoader.loadMany(search.projects),
-  issues: (search) => issueLoader.loadMany(search.issues),
-  organizations: (search) => orgLoader.loadMany(search.organizations)
+  __resolveType(value) {
+    if (value.desc) {
+      return 'Project'
+    }
+    if (value.website) {
+      return 'Organization'
+    }
+    if (value.profilePic) {
+      return 'User'
+    }
+    return null
+  }
 }

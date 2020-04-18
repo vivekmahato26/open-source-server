@@ -3,6 +3,10 @@ import mongoose from 'mongoose';
 const Schema = mongoose.Schema;
 
 const orgSchema = new Schema({
+    logo: {
+        type: String,
+        required: false
+    },
     name:{
         type: String,
         required: true

@@ -32,14 +32,15 @@ app.use(
     graphiql: true
   }))
 )
-mongoose.set('useUnifiedTopology', true)
 mongoose.set('debug', true)
 mongoose
   .connect(
     `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0-ogjsn.mongodb.net/${process.env.MONGO_DB}?retryWrites=true&w=majority`,
     {
       useNewUrlParser: true,
-      useCreateIndex: true
+      useCreateIndex: true,
+      useUnifiedTopology: true,
+      useFindAndModify: false
     }
   )
   .then(() => {

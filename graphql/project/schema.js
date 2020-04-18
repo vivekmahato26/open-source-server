@@ -8,10 +8,11 @@ import Organization from '../organization/schema';
 const Project = `
     type Project {
         _id: ID!
+        icon: String
         name: String!
         desc: String
         organization: Organization
-        admin: User
+        admin: User!
         tag: [String]
         category: String!
         community: Community
@@ -44,6 +45,7 @@ const Project = `
     }
 
     input ProjectInput {
+        icon: String
         name: String!
         desc: String!
         slug: String!
@@ -54,6 +56,7 @@ const Project = `
     }
 
     input UpdateProject {
+        icon: String
         projectId: String!
         community: CommunityInput
         adopter:[String]

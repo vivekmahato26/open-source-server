@@ -2,11 +2,13 @@ import Base from '../base'
 import Project from '../project/schema'
 import Comment from '../comment/schema'
 import Message from '../message/schema'
-import Orgination from '../organization/schema'
+import Organization from '../organization/schema'
+import Issue from '../issue/schema'
 
 const User = `
     type User {
         _id: ID!
+        profilePic: String
         sname: String!
         email: String!
         name: String
@@ -28,6 +30,7 @@ const User = `
     }
 
     input UserInput {
+        profilePic: String
         name: String!
         bio: String!
         social: [String]
@@ -42,12 +45,9 @@ const User = `
         token: String!
     }
 
-    type Search {
-        users: [User]
-        projects: [Project]
-        issues: [Issue]
-        organizations: [Organization]
-    }
+    union Search = User | Project | Organization
+
+    
 
     extend type Query {
         login(loginInput:LoginInput!): AuthData!
@@ -63,4 +63,4 @@ const User = `
     }
 `
 
-export default () => [User, Message, Project, Orgination, Comment, Base]
+export default () => [User, Message, Project, Organization, Issue, Comment, Base]

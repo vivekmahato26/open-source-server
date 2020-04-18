@@ -5,6 +5,7 @@ const Organization = `
     type Organization {
         _id: ID!
         name: String!
+        logo: String
         website: String
         icon: [String]
         projects: [Project]
@@ -14,6 +15,7 @@ const Organization = `
     }
 
     input OrgInput {
+        logo: String
         name: String!
         website: String!
         icon: [String]

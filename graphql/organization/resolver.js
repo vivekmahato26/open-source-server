@@ -22,6 +22,7 @@ export const Mutation = {
         throw new Error('User is not authenticated')
       }
       const organization = new OrganizationModel({
+        logo: args.orgInput.logo,
         name: args.orgInput.name,
         website: args.orgInput.website,
         icon: args.orgInput.icon

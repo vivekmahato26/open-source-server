@@ -4,6 +4,10 @@ const Schema = mongoose.Schema
 
 const userSchema = new Schema(
   {
+    profilePic: {
+      type: String,
+      required: false
+    },
     sname: {
       type: String,
       required: true
@@ -52,7 +56,7 @@ const userSchema = new Schema(
         ref: 'CommentModel'
       }
     ],
-    follower: [
+    followers: [
       {
         type: Schema.Types.ObjectId,
         ref: 'UserModel'

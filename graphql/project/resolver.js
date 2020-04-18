@@ -53,18 +53,6 @@ export const Query = {
           .limit(pagination.limit)
           .sort({ createdAt: -1 })
       }
-      // else if (
-      //   args.projectFilter.projectId !== null &&
-      //   args.projectFilter.projectId.length !== 0
-      // ){
-      //   let temp;
-      //   let pid = args.projectFilter.projectId;
-      //   for(i = 0; i < pid.length; i++){
-      //     temp = await ProjectModel.findById(pid[i]);
-      //     console.log(temp);
-      //     projects.push(temp);
-      //   }
-      // }
       else {
         projects = await ProjectModel.find()
           .skip(pagination.skip)
@@ -85,26 +73,33 @@ export const Mutation = {
     }
     let orgId
     let tags = args.projectInput.tag[0].split(',')
-    var re = new RegExp(args.projectInput.organization, 'i')
-    const org = await OrganizationModel.find({ name: { $regex: re } })
-    if (org.length === 0) {
-      const organization = new OrganizationModel({
-        name: args.projectInput.organization,
-      })
 
-      const res = await organization.save()
-      orgId = res._id
-    } else {
-      orgId = org[0]._id
+    let orgName = args.projectInput.organization
+    if (orgName !== undefined && orgName !== null && orgName.length !== 0) {
+      console.log(args.projectInput, orgName.length)
+      var re = new RegExp(orgName, 'i')
+      const org = await OrganizationModel.find({ name: { $regex: re } })
+      if (org.length === 0) {
+        const organization = new OrganizationModel({
+          name: orgName
+        })
+
+        const res = await organization.save()
+        orgId = res._id
+      } else {
+        orgId = org[0]._id
+      }
     }
+
     const project = new ProjectModel({
+      icon: args.projectInput.icon,
       name: args.projectInput.name,
       desc: args.projectInput.desc,
       organization: orgId,
       admin: req.userId,
       tag: tags,
       category: args.projectInput.category,
-      slug: args.projectInput.slug,
+      slug: args.projectInput.slug
     })
     try {
       const result = await project.save()
@@ -115,14 +110,14 @@ export const Mutation = {
       }
       admin.owned.push(project)
       await admin.save()
-
-      const org = await OrganizationModel.findById(orgId)
-      if (!org) {
-        throw new Error('Organization not found')
+      if (orgName !== undefined && orgName !== null && orgName.length !== 0) {
+        const org = await OrganizationModel.findById(orgId)
+        if (!org) {
+          throw new Error('Organization not found')
+        }
+        org.projects.push(project)
+        await org.save()
       }
-      org.projects.push(project)
-      await org.save()
-
       return result
     } catch (err) {
       throw err
@@ -135,23 +130,27 @@ export const Mutation = {
     let community = args.updateInput.community
     let adopters = args.updateInput.adopter[0].split(',')
     let adopter = []
-    for (var i = 0; i < adopters.length; i++) {
-      var re = new RegExp(adopters[i], 'i')
-      const org = await OrganizationModel.find({ name: { $regex: re } })
-      if (org.length === 0) {
-        const organization = new OrganizationModel({
-          name: adopters[i]
-        })
-        const res = await organization.save()
-        adopter.push(res._id)
-      } else {
-        adopter.push(org[0]._id)
+
+    if (adopters.length !== 0 && adopters[0].length !== 0) {
+      for (var i = 0; i < adopters.length; i++) {
+        var re = new RegExp(adopters[i], 'i')
+        const org = await OrganizationModel.find({ name: { $regex: re } })
+        if (org.length === 0) {
+          const organization = new OrganizationModel({
+            name: adopters[i]
+          })
+          const res = await organization.save()
+          adopter.push(res._id)
+        } else {
+          adopter.push(org[0]._id)
+        }
       }
     }
 
     const project = await ProjectModel.findByIdAndUpdate(
       { _id: args.updateInput.projectId },
       {
+        icon: args.updateInput.icon,
         community,
         adopter
       },
@@ -161,14 +160,16 @@ export const Mutation = {
     try {
       const resDetails = await project.save()
       updatedProject = resDetails
-      adopter.map(async o => {
-        const org = await OrganizationModel.findById(o)
-        if (!org) {
-          throw new Error('Organization not found')
-        }
-        org.adopted.push(project)
-        await org.save()
-      })
+      if (adopters.length !== 0 && adopters[0].length !== 0) {
+        adopter.map(async o => {
+          const org = await OrganizationModel.findById(o)
+          if (!org) {
+            throw new Error('Organization not found')
+          }
+          org.adopted.push(project)
+          await org.save()
+        })
+      }
       return updatedProject
     } catch (err) {
       throw err
